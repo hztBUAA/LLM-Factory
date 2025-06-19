@@ -1,13 +1,21 @@
+# Core dependencies
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 pydantic>=2.0.0
 httpx>=0.25.0
-openai>=1.0.0
-boto3>=1.34.0
-google-cloud-aiplatform>=1.38.0
-google-generativeai>=0.3.0
 aiohttp>=3.9.0
-loguru>=0.7.0
 python-dotenv>=1.0.0
-tenacity>=8.2.0
 pyyaml>=6.0.1
+loguru>=0.7.0
+tenacity>=8.2.0
+
+# LLM provider SDKs
+openai>=1.0.0
+boto3>=1.34.0  # For Claude
+google-cloud-aiplatform>=1.38.0
+google-generativeai>=0.3.0  # For Gemini
+# Add other provider SDKs as needed
+
+# Development/testing
+pytest>=7.0.0
+pytest-asyncio>=0.23.0
