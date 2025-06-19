@@ -347,8 +347,21 @@ class LLMFactory:
         Args:
             messages: String message or list of ChatMessage objects
             **kwargs: Additional parameters (temperature, max_tokens, etc.)
+            
+        Raises:
+            RuntimeError: If called from within an async context. Use chat_async() instead.
         """
-        return asyncio.run(self.chat_async(messages, **kwargs))
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # 如果没有运行中的事件循环，创建一个新的
+            return asyncio.run(self.chat_async(messages, **kwargs))
+        
+        # 如果已经在事件循环中，应该使用异步方法
+        raise RuntimeError(
+            "Synchronous chat() cannot be called from within an async context. "
+            "Use await chat_async() instead."
+        )
     
     async def chat_async(
         self,

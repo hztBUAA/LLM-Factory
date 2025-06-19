@@ -140,6 +140,86 @@ response = factory.chat("Hello, world!")
 print(response.choices[0]["message"]["content"])
 
 # Asynchronous call
+async def async_chat():
+    response = await factory.chat_async("Hello, world!")
+    print(response.choices[0]["message"]["content"])
+```
+
+### Synchronous vs Asynchronous Usage
+
+1. In Synchronous Environments:
+   - Use `factory.chat()` method
+   - Suitable for scripts, command-line tools, and non-async contexts
+   - Example:
+   ```python
+   response = factory.chat("Hello, world!")
+   ```
+
+2. In Asynchronous Environments (FastAPI, aiohttp, etc.):
+   - Must use `await factory.chat_async()`
+   - Do not use `factory.chat()` as it will raise RuntimeError
+   - Example in FastAPI:
+   ```python
+   @app.post("/chat")
+   async def chat_endpoint(request: ChatRequest):
+       response = await factory.chat_async(request.message)
+       return response
+   ```
+
+3. Best Practices:
+   - Always use `chat_async()` in async applications
+   - Only use `chat()` in purely synchronous environments
+   - Avoid mixing both methods in the same application
+   - Handle potential RuntimeError when using `chat()` in async contexts
+
+### 使用特定 ModelConfig 配置
+
+您也可以直接使用 ModelConfig 来初始化 LLMFactory，这样可以更灵活地控制模型配置：
+
+```python
+from llm_factory import LLMFactory, ModelConfig, ProviderType
+
+# 创建单个 ModelConfig
+config = ModelConfig(
+    provider=ProviderType.OPENAI,
+    model_name="gpt-4o",
+    api_key="your-api-key",
+    api_base="your-api-base",
+    api_version="2024-02-15-preview"
+)
+
+# 使用单个配置初始化工厂
+factory = LLMFactory(config)
+
+# 或者使用多个配置进行负载均衡
+configs = [
+    ModelConfig(
+        provider=ProviderType.OPENAI,
+        model_name="gpt-4o",
+        api_key="key1",
+        api_base="base1",
+        api_version="2024-02-15-preview"
+    ),
+    ModelConfig(
+        provider=ProviderType.QWEN,
+        model_name="qwen-turbo",
+        api_key="key2",
+        api_base="https://dashscope.aliyuncs.com/api/v1"
+    ),
+    ModelConfig(
+        provider=ProviderType.DEEPSEEK,
+        model_name="deepseek-chat",
+        api_key="key3",
+        api_base="your-deepseek-base"
+    )
+]
+
+# 使用多个配置初始化工厂
+factory = LLMFactory(configs)
+
+# 使用方式与之前相同
+response = factory.chat("Hello, world!")
+# 或者异步调用
 response = await factory.chat_async("Hello, world!")
 ```
 

@@ -140,8 +140,37 @@ response = factory.chat("你好，世界！")
 print(response.choices[0]["message"]["content"])
 
 # 异步调用
-response = await factory.chat_async("你好，世界！")
+async def async_chat():
+    response = await factory.chat_async("你好，世界！")
+    print(response.choices[0]["message"]["content"])
 ```
+
+### 同步和异步使用说明
+
+1. 同步环境使用：
+   - 使用 `factory.chat()` 方法
+   - 适用于脚本、命令行工具等非异步场景
+   - 示例：
+   ```python
+   response = factory.chat("你好，世界！")
+   ```
+
+2. 异步环境使用（如 FastAPI、aiohttp 等）：
+   - 必须使用 `await factory.chat_async()`
+   - 不要使用 `factory.chat()`，这会抛出 RuntimeError
+   - FastAPI 示例：
+   ```python
+   @app.post("/chat")
+   async def chat_endpoint(request: ChatRequest):
+       response = await factory.chat_async(request.message)
+       return response
+   ```
+
+3. 最佳实践：
+   - 在异步应用中始终使用 `chat_async()`
+   - 只在纯同步环境中使用 `chat()`
+   - 避免在同一应用中混用两种方法
+   - 注意处理在异步上下文中使用 `chat()` 可能抛出的 RuntimeError
 
 ### 负载均衡示例
 
