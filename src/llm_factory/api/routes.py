@@ -49,7 +49,7 @@ async def chat_completions(request: ChatCompletionRequest):
         
         if request.stream:
             async def generate():
-                async for chunk in factory.stream_async(request.messages, **request.dict(exclude={"messages", "model"})):
+                async for chunk in factory.stream_async(request.messages, **request.model_dump(exclude={"messages"})):
                     yield f"data: {chunk.json()}\n\n"
                 yield "data: [DONE]\n\n"
             
@@ -59,7 +59,7 @@ async def chat_completions(request: ChatCompletionRequest):
                 headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
             )
         else:
-            response = await factory.chat_async(request.messages, **request.dict(exclude={"messages", "model"}))
+            response = await factory.chat_async(request.messages, **request.model_dump(exclude={"messages"}))
             return response
             
     except Exception as e:
