@@ -10,6 +10,37 @@ A unified LLM factory system that provides a consistent interface for multiple A
 - **Claude** - AWS Bedrock implementation
 - **Gemini** - Google Gemini models
 
+## Installation Guide
+
+### Using venv
+
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+## Windows
+venv\Scripts\activate
+## Linux/MacOS
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Using Conda
+
+```bash
+# Create new conda environment
+conda create -n llm-factory python=3.11
+
+# Activate environment
+conda activate llm-factory
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
 ## Features
 
 - Unified interface for multiple LLM providers

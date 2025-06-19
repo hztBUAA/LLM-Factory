@@ -10,6 +10,37 @@
 - **Claude** - AWS Bedrock Claude 实现
 - **Gemini** - Google Gemini 模型
 
+## 安装指南
+
+### 使用 venv 安装
+
+```bash
+# 创建虚拟环境
+python -m venv venv
+
+# 激活虚拟环境
+## Windows
+venv\Scripts\activate
+## Linux/MacOS
+source venv/bin/activate
+
+# 安装依赖
+pip install -r requirements.txt
+```
+
+### 使用 Conda 安装
+
+```bash
+# 创建新的 conda 环境
+conda create -n llm-factory python=3.11
+
+# 激活环境
+conda activate llm-factory
+
+# 安装依赖
+pip install -r requirements.txt
+```
+
 ## 特性
 
 - 统一的多 LLM 提供商接口
