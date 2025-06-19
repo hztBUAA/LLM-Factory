@@ -1,0 +1,51 @@
+providers:
+  - provider: "openai"
+    model_name: "gpt-4o"
+    api_key: "${OPENAI_API_KEY}"
+    api_base: "${OPENAI_API_BASE}"
+    api_version: "2024-02-01"
+    max_tokens: 4096
+    temperature: 0.7
+    timeout: 60
+    max_retries: 3
+    proxy_config:
+      http: "${HTTP_PROXY}"
+      https: "${HTTPS_PROXY}"
+
+  - provider: "qwen"
+    model_name: "qwen-turbo"
+    api_key: "${QWEN_API_KEY}"
+    api_base: "https://dashscope.aliyuncs.com/api/v1"
+    max_tokens: 2000
+    temperature: 0.7
+    timeout: 60
+    max_retries: 3
+
+  - provider: "deepseek"
+    model_name: "deepseek-chat"
+    api_key: "${DEEPSEEK_API_KEY}"
+    api_base: "https://api.deepseek.com/v1"
+    max_tokens: 4096
+    temperature: 1.0
+    timeout: 60
+    max_retries: 3
+
+  - provider: "claude"
+    model_name: "anthropic.claude-3-5-sonnet-20241022-v2:0"
+    api_key: "${CLAUDE_ACCESS_KEY}"
+    api_base: "${CLAUDE_SECRET_KEY}"
+    region: "us-east-1"
+    max_tokens: 4096
+    temperature: 0.1
+    timeout: 60
+    max_retries: 3
+
+  - provider: "gemini"
+    model_name: "gemini-2.0-flash-exp"
+    api_key: "${GEMINI_API_KEY}"
+    project_id: "${GEMINI_PROJECT_ID}"
+    region: "us-central1"
+    max_tokens: 8192
+    temperature: 1.0
+    timeout: 60
+    max_retries: 3
