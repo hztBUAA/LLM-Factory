@@ -31,45 +31,70 @@ def get_factory() -> LLMFactory:
     if _factory is None:
         configs = []
         
-        if os.getenv("OPENAI_API_KEY"):
+        # OpenAI配置
+        openai_keys = [k.strip() for k in os.getenv("OPENAI_API_KEYS", "").split(",") if k.strip()]
+        if not openai_keys and os.getenv("OPENAI_API_KEY"):  # 兼容单个key的情况
+            openai_keys = [os.getenv("OPENAI_API_KEY")]
+        
+        for api_key in openai_keys:
             configs.append(ModelConfig(
                 provider=ProviderType.OPENAI,
-                model_name=os.getenv("OPENAI_MODEL", "gpt-4o"),
-                api_key=os.getenv("OPENAI_API_KEY"),
+                model_name=os.getenv("OPENAI_MODEL", "gpt-4"),
+                api_key=api_key,
                 api_base=os.getenv("OPENAI_API_BASE"),
                 api_version=os.getenv("OPENAI_API_VERSION"),
             ))
         
-        if os.getenv("QWEN_API_KEY"):
+        # Qwen配置
+        qwen_keys = [k.strip() for k in os.getenv("QWEN_API_KEYS", "").split(",") if k.strip()]
+        if not qwen_keys and os.getenv("QWEN_API_KEY"):
+            qwen_keys = [os.getenv("QWEN_API_KEY")]
+            
+        for api_key in qwen_keys:
             configs.append(ModelConfig(
                 provider=ProviderType.QWEN,
                 model_name=os.getenv("QWEN_MODEL", "qwen-turbo"),
-                api_key=os.getenv("QWEN_API_KEY"),
+                api_key=api_key,
                 api_base=os.getenv("QWEN_API_BASE"),
             ))
         
-        if os.getenv("DEEPSEEK_API_KEY"):
+        # Deepseek配置
+        deepseek_keys = [k.strip() for k in os.getenv("DEEPSEEK_API_KEYS", "").split(",") if k.strip()]
+        if not deepseek_keys and os.getenv("DEEPSEEK_API_KEY"):
+            deepseek_keys = [os.getenv("DEEPSEEK_API_KEY")]
+            
+        for api_key in deepseek_keys:
             configs.append(ModelConfig(
                 provider=ProviderType.DEEPSEEK,
                 model_name=os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
-                api_key=os.getenv("DEEPSEEK_API_KEY"),
+                api_key=api_key,
                 api_base=os.getenv("DEEPSEEK_API_BASE"),
             ))
         
-        if os.getenv("CLAUDE_ACCESS_KEY"):
+        # Claude配置
+        claude_keys = [k.strip() for k in os.getenv("CLAUDE_ACCESS_KEYS", "").split(",") if k.strip()]
+        if not claude_keys and os.getenv("CLAUDE_ACCESS_KEY"):
+            claude_keys = [os.getenv("CLAUDE_ACCESS_KEY")]
+            
+        for api_key in claude_keys:
             configs.append(ModelConfig(
                 provider=ProviderType.CLAUDE,
                 model_name=os.getenv("CLAUDE_MODEL", "anthropic.claude-3-5-sonnet-20241022-v2:0"),
-                api_key=os.getenv("CLAUDE_ACCESS_KEY"),
+                api_key=api_key,
                 api_base=os.getenv("CLAUDE_SECRET_KEY"),
                 region=os.getenv("CLAUDE_REGION", "us-east-1"),
             ))
         
-        if os.getenv("GEMINI_API_KEY"):
+        # Gemini配置
+        gemini_keys = [k.strip() for k in os.getenv("GEMINI_API_KEYS", "").split(",") if k.strip()]
+        if not gemini_keys and os.getenv("GEMINI_API_KEY"):
+            gemini_keys = [os.getenv("GEMINI_API_KEY")]
+            
+        for api_key in gemini_keys:
             configs.append(ModelConfig(
                 provider=ProviderType.GEMINI,
                 model_name=os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp"),
-                api_key=os.getenv("GEMINI_API_KEY"),
+                api_key=api_key,
                 project_id=os.getenv("GEMINI_PROJECT_ID"),
                 region=os.getenv("GEMINI_REGION"),
             ))
