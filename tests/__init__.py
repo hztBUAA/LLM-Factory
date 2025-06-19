@@ -1,3 +1,3 @@
 """
-Test package for LLM Factory.
+Test suite for LLM Factory.
 """
