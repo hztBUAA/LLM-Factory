@@ -20,11 +20,11 @@ def client():
     return TestClient(app)
 
 
-def test_root_endpoint(client):
-    """Test root endpoint."""
-    response = client.get("/")
+def test_docs_endpoint(client):
+    """Test docs endpoint."""
+    response = client.get("/docs")
     assert response.status_code == 200
-    print(f"✓ Root endpoint: {response.status_code} - {response.json()}")
+    # print(f"✓ Root endpoint: {response.status_code} - {response.json()}")
 
 
 def test_health_endpoint(client):

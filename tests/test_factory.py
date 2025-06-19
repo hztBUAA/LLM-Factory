@@ -4,8 +4,20 @@ Tests for the LLM Factory.
 
 import pytest
 from unittest.mock import Mock, AsyncMock
+import time
 
+from src.llm_factory.models import ChatResponse
 from src.llm_factory import LLMFactory, ModelConfig, ProviderType, ChatMessage
+
+
+def create_mock_chat_response(content: str = "Hello!") -> ChatResponse:
+    """Create a mock ChatResponse object for testing."""
+    return ChatResponse(
+        id="chatcmpl-123",
+        created=int(time.time()),
+        model="gpt-4o",
+        choices=[{"message": {"content": content}}]
+    )
 
 
 @pytest.fixture
@@ -65,9 +77,7 @@ def test_get_provider_status(factory):
 @pytest.mark.asyncio
 async def test_chat_async_string_input(factory):
     """Test async chat with string input."""
-    mock_response = Mock()
-    mock_response.choices = [{"message": {"content": "Hello!"}}]
-    
+    mock_response = create_mock_chat_response("Hello!")
     factory.providers[0].chat_completion = AsyncMock(return_value=mock_response)
     
     response = await factory.chat_async("Hello")
@@ -76,9 +86,7 @@ async def test_chat_async_string_input(factory):
 
 def test_chat_sync(factory):
     """Test synchronous chat."""
-    mock_response = Mock()
-    mock_response.choices = [{"message": {"content": "Hello!"}}]
-    
+    mock_response = create_mock_chat_response("Hello!")
     factory.providers[0].chat_completion = AsyncMock(return_value=mock_response)
     
     response = factory.chat("Hello")
@@ -87,9 +95,7 @@ def test_chat_sync(factory):
 
 def test_callable_interface(factory):
     """Test callable interface."""
-    mock_response = Mock()
-    mock_response.choices = [{"message": {"content": "Hello!"}}]
-    
+    mock_response = create_mock_chat_response("Hello!")
     factory.providers[0].chat_completion = AsyncMock(return_value=mock_response)
     
     response = factory("Hello")
