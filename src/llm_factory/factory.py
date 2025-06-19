@@ -5,6 +5,7 @@ Main LLM Factory class with load balancing and unified interface.
 import asyncio
 import os
 import random
+import yaml
 from typing import Any, AsyncGenerator, Dict, List, Optional, Union
 
 from loguru import logger
@@ -47,7 +48,97 @@ class LLMFactory:
             configs = cls._load_configs_from_env()
             cls._instance = cls(configs)
         return cls._instance
-    
+
+    @classmethod
+    def create_from_config(cls, config_file: str) -> 'LLMFactory':
+        """
+        Create a LLMFactory instance with configuration from a YAML file.
+        
+        Args:
+            config_file: Path to the YAML configuration file
+            
+        Returns:
+            LLMFactory instance
+        """
+        if cls._instance is None:
+            configs = cls._load_configs_from_yaml(config_file)
+            cls._instance = cls(configs)
+        return cls._instance
+
+    @staticmethod
+    def _load_configs_from_yaml(config_file: str) -> List[ModelConfig]:
+        """Load provider configurations from YAML file."""
+        if not os.path.exists(config_file):
+            raise FileNotFoundError(f"Configuration file not found: {config_file}")
+
+        with open(config_file, 'r', encoding='utf-8') as f:
+            config_data = yaml.safe_load(f)
+
+        if not config_data or 'providers' not in config_data:
+            raise ValueError("Invalid configuration file: 'providers' section not found")
+
+        configs = []
+        for provider_config in config_data['providers']:
+            provider_type = provider_config.get('provider', '').upper()
+            if not provider_type or not hasattr(ProviderType, provider_type):
+                logger.warning(f"Skipping invalid provider type: {provider_type}")
+                continue
+
+            # 处理环境变量替换
+            for key, value in provider_config.items():
+                if isinstance(value, str) and value.startswith('${') and value.endswith('}'):
+                    env_var = value[2:-1]
+                    env_value = os.getenv(env_var)
+                    if env_value:
+                        if ',' in env_value:  # 处理多个值的情况
+                            provider_config[key + 's'] = [v.strip() for v in env_value.split(',') if v.strip()]
+                        else:
+                            provider_config[key] = env_value
+                    else:
+                        logger.warning(f"Environment variable not found: {env_var}")
+
+            # 处理多账户配置
+            api_keys = provider_config.get('api_keys', [provider_config.get('api_key')])
+            api_bases = provider_config.get('api_bases', [provider_config.get('api_base')])
+            
+            if isinstance(api_keys, str):
+                api_keys = [api_keys]
+            if isinstance(api_bases, str):
+                api_bases = [api_bases]
+
+            # 确保api_keys和api_bases长度匹配
+            if len(api_bases) == 1 and len(api_keys) > 1:
+                api_bases = api_bases * len(api_keys)
+            elif len(api_bases) > 1 and len(api_keys) == 1:
+                api_keys = api_keys * len(api_bases)
+
+            # 为每个API密钥创建一个配置
+            for i, api_key in enumerate(api_keys):
+                if not api_key:
+                    continue
+
+                config_dict = {
+                    'provider': getattr(ProviderType, provider_type),
+                    'model_name': provider_config.get('model_name'),
+                    'api_key': api_key,
+                }
+
+                # 添加API base（如果存在）
+                if i < len(api_bases) and api_bases[i]:
+                    config_dict['api_base'] = api_bases[i]
+
+                # 添加其他配置参数
+                for key, value in provider_config.items():
+                    if key not in ['provider', 'model_name', 'api_key', 'api_keys', 'api_base', 'api_bases']:
+                        config_dict[key] = value
+
+                configs.append(ModelConfig(**config_dict))
+
+        if not configs:
+            raise ValueError("No valid provider configurations found in YAML file")
+
+        return configs
+
     @staticmethod
     def _load_configs_from_env() -> List[ModelConfig]:
         """Load provider configurations from environment variables."""

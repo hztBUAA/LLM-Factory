@@ -55,7 +55,11 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Environment Variables Setup
+### Configuration
+
+You can initialize LLM Factory using either environment variables or a configuration file:
+
+#### Option 1: Environment Variables
 
 Create a `.env` file with your configuration:
 
@@ -86,16 +90,50 @@ GEMINI_PROJECT_ID="your-project-id"
 GEMINI_REGION="your-region"
 ```
 
+#### Option 2: YAML Configuration File
+
+Create a `config.yaml` file:
+
+```yaml
+providers:
+  - provider: "openai"
+    model_name: "gpt-4o"
+    api_key: "${OPENAI_API_KEY}"  # Still supports reading sensitive info from env vars
+    api_base: "${OPENAI_API_BASE}"
+    api_version: "2024-02-01"
+    max_tokens: 4096
+    temperature: 0.7
+    timeout: 60
+    max_retries: 3
+    proxy_config:
+      http: "${HTTP_PROXY}"
+      https: "${HTTPS_PROXY}"
+
+  - provider: "qwen"
+    model_name: "qwen-turbo"
+    api_key: "${QWEN_API_KEY}"
+    api_base: "https://dashscope.aliyuncs.com/api/v1"
+    max_tokens: 2000
+    temperature: 0.7
+    timeout: 60
+    max_retries: 3
+  
+  # Other provider configurations...
+```
+
 ### Basic Usage
 
 ```python
 from llm_factory import LLMFactory
 
-# Create factory instance (automatically loads from .env)
+# Option 1: Create factory instance using environment variables (auto-loads from .env)
 factory = LLMFactory.create()
 
 # Or specify a different env file
-factory = LLMFactory.create(".env.local")
+factory = LLMFactory.create(env_file=".env.local")
+
+# Option 2: Create factory instance using config file
+factory = LLMFactory.create_from_config("config.yaml")
 
 # Synchronous call
 response = factory.chat("Hello, world!")

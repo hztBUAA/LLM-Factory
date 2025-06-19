@@ -10,3 +10,4 @@ aiohttp>=3.9.0
 loguru>=0.7.0
 python-dotenv>=1.0.0
 tenacity>=8.2.0
+pyyaml>=6.0.1

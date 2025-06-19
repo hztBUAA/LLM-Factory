@@ -55,7 +55,11 @@ pip install -r requirements.txt
 
 ## 使用方法
 
-### 环境变量配置
+### 配置方式
+
+你可以选择使用环境变量或配置文件来初始化 LLM Factory：
+
+#### 方式一：环境变量配置
 
 创建 `.env` 文件，配置你的 API 密钥：
 
@@ -86,16 +90,50 @@ GEMINI_PROJECT_ID="你的项目ID"
 GEMINI_REGION="你的地区"
 ```
 
+#### 方式二：YAML 配置文件
+
+创建 `config.yaml` 文件：
+
+```yaml
+providers:
+  - provider: "openai"
+    model_name: "gpt-4o"
+    api_key: "${OPENAI_API_KEY}"  # 仍然支持从环境变量读取敏感信息
+    api_base: "${OPENAI_API_BASE}"
+    api_version: "2024-02-01"
+    max_tokens: 4096
+    temperature: 0.7
+    timeout: 60
+    max_retries: 3
+    proxy_config:
+      http: "${HTTP_PROXY}"
+      https: "${HTTPS_PROXY}"
+
+  - provider: "qwen"
+    model_name: "qwen-turbo"
+    api_key: "${QWEN_API_KEY}"
+    api_base: "https://dashscope.aliyuncs.com/api/v1"
+    max_tokens: 2000
+    temperature: 0.7
+    timeout: 60
+    max_retries: 3
+  
+  # 其他提供商配置...
+```
+
 ### 基本用法
 
 ```python
 from llm_factory import LLMFactory
 
-# 创建工厂实例（自动从 .env 加载配置）
+# 方式一：使用环境变量创建工厂实例（自动从 .env 加载配置）
 factory = LLMFactory.create()
 
-# 或者指定其他环境变量文件
-factory = LLMFactory.create(".env.local")
+# 指定其他环境变量文件
+factory = LLMFactory.create(env_file=".env.local")
+
+# 方式二：使用配置文件创建工厂实例
+factory = LLMFactory.create_from_config("config.yaml")
 
 # 同步调用
 response = factory.chat("你好，世界！")
