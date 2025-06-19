@@ -276,15 +276,117 @@ curl http://localhost:8000/v1/chat/completions \
   }'
 ```
 
-### Model Mapping(Todo)
+### Model Mapping
 
-When using LLM Factory as an OpenAI API alternative, you can use any of your configured models. Here's how the models map:
+The model mapping in LLM Factory is determined by your configuration. When using it as an OpenAI API alternative, the model name you specify in API calls should match the `model_name` in your configuration.
 
+#### Configuration-Based Mapping
+
+1. Using Environment Variables:
+```bash
+# Your .env configuration
+OPENAI_MODEL="gpt-4"              # This will be your model name in API calls
+QWEN_MODEL="qwen-turbo"           # This will be your model name in API calls
+DEEPSEEK_MODEL="deepseek-chat"    # This will be your model name in API calls
 ```
-Todo
+
+2. Using YAML Configuration:
+```yaml
+providers:
+  - provider: "openai"
+    model_name: "gpt-4"           # Use this name in API calls
+    api_key: "${OPENAI_API_KEY}"
+    api_base: "${OPENAI_API_BASE}"
+
+  - provider: "qwen"
+    model_name: "qwen-turbo"      # Use this name in API calls
+    api_key: "${QWEN_API_KEY}"
+    api_base: "https://dashscope.aliyuncs.com/api/v1"
+
+  - provider: "deepseek"
+    model_name: "deepseek-chat"   # Use this name in API calls
+    api_key: "${DEEPSEEK_API_KEY}"
 ```
 
-The model you specify in the API call should match the model name in your configuration.
+3. Using Direct Configuration:
+```python
+configs = [
+    ModelConfig(
+        provider=ProviderType.OPENAI,
+        model_name="gpt-4",       # Use this name in API calls
+        api_key="your-key",
+        api_base="your-base"
+    ),
+    ModelConfig(
+        provider=ProviderType.QWEN,
+        model_name="qwen-turbo",  # Use this name in API calls
+        api_key="your-key"
+    )
+]
+factory = LLMFactory(configs)
+```
+
+#### Using Models in API Calls
+
+After configuration, use the configured model names in your API calls:
+
+```python
+# Using OpenAI client
+client = OpenAI(
+    api_key="any-key",
+    base_url="http://localhost:8000/v1"
+)
+
+# Use the exact model name from your configuration
+response = client.chat.completions.create(
+    model="gpt-4",               # Must match model_name in config
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+# You can use any configured model
+response = client.chat.completions.create(
+    model="qwen-turbo",         # Must match model_name in config
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+#### Load Balancing with Multiple Models
+
+If you configure multiple instances of the same model, LLM Factory will automatically handle load balancing:
+
+```yaml
+providers:
+  - provider: "openai"
+    model_name: "gpt-4"          # Same model name
+    api_key: "key1"
+    api_base: "base1"
+
+  - provider: "openai"
+    model_name: "gpt-4"          # Same model name
+    api_key: "key2"
+    api_base: "base2"
+```
+
+In this case, requests to "gpt-4" will be automatically load balanced between the two configurations using the specified strategy (round-robin, random, or first-available).
+
+#### Model Name Flexibility
+
+- You can use any model name in your configuration
+- The model name in API calls must exactly match your configuration
+- Multiple providers can use the same model name for load balancing
+- Different model names can point to the same provider type
+
+For example:
+```yaml
+providers:
+  - provider: "openai"
+    model_name: "my-fast-model"     # Custom name
+    api_key: "${OPENAI_API_KEY}"
+
+  - provider: "openai"
+    model_name: "my-smart-model"    # Different name, same provider
+    api_key: "${OPENAI_API_KEY2}"
+```
 
 ### Available Endpoints
 

@@ -278,16 +278,115 @@ curl http://localhost:8000/v1/chat/completions \
 
 ### 模型映射
 
-当使用 LLM Factory 作为 OpenAI API 替代品时，你可以使用任何已配置的模型。以下是模型映射示例：
+LLM Factory 中的模型映射是由你的配置决定的。当将其作为 OpenAI API 替代品使用时，在 API 调用中指定的模型名称必须与配置中的 `model_name` 完全匹配。
 
-| 原 OpenAI 模型      | LLM Factory 对应模型    |
-|-------------------|------------------------|
-| gpt-4            | gpt-4o (Azure OpenAI)  |
-| gpt-3.5-turbo    | qwen-turbo (通义千问)    |
-| claude-3-sonnet  | claude-3-sonnet (Claude)|
-| ...              | 任何已配置的模型           |
+#### 基于配置的映射
 
-在 API 调用中指定的模型名称应与你的配置中的模型名称匹配。
+1. 使用环境变量：
+```bash
+# 你的 .env 配置
+OPENAI_MODEL="gpt-4"              # 这将是你在 API 调用中使用的模型名称
+QWEN_MODEL="qwen-turbo"           # 这将是你在 API 调用中使用的模型名称
+DEEPSEEK_MODEL="deepseek-chat"    # 这将是你在 API 调用中使用的模型名称
+```
+
+2. 使用 YAML 配置：
+```yaml
+providers:
+  - provider: "openai"
+    model_name: "gpt-4"           # 在 API 调用中使用此名称
+    api_key: "${OPENAI_API_KEY}"
+    api_base: "${OPENAI_API_BASE}"
+
+  - provider: "qwen"
+    model_name: "qwen-turbo"      # 在 API 调用中使用此名称
+    api_key: "${QWEN_API_KEY}"
+    api_base: "https://dashscope.aliyuncs.com/api/v1"
+
+  - provider: "deepseek"
+    model_name: "deepseek-chat"   # 在 API 调用中使用此名称
+    api_key: "${DEEPSEEK_API_KEY}"
+```
+
+3. 使用直接配置：
+```python
+configs = [
+    ModelConfig(
+        provider=ProviderType.OPENAI,
+        model_name="gpt-4",       # 在 API 调用中使用此名称
+        api_key="your-key",
+        api_base="your-base"
+    ),
+    ModelConfig(
+        provider=ProviderType.QWEN,
+        model_name="qwen-turbo",  # 在 API 调用中使用此名称
+        api_key="your-key"
+    )
+]
+factory = LLMFactory(configs)
+```
+
+#### 在 API 调用中使用模型
+
+配置完成后，在 API 调用中使用配置的模型名称：
+
+```python
+# 使用 OpenAI 客户端
+client = OpenAI(
+    api_key="any-key",
+    base_url="http://localhost:8000/v1"
+)
+
+# 使用配置中的精确模型名称
+response = client.chat.completions.create(
+    model="gpt-4",               # 必须与配置中的 model_name 匹配
+    messages=[{"role": "user", "content": "你好！"}]
+)
+
+# 你可以使用任何已配置的模型
+response = client.chat.completions.create(
+    model="qwen-turbo",         # 必须与配置中的 model_name 匹配
+    messages=[{"role": "user", "content": "你好！"}]
+)
+```
+
+#### 多模型负载均衡
+
+如果你配置了同一模型的多个实例，LLM Factory 将自动处理负载均衡：
+
+```yaml
+providers:
+  - provider: "openai"
+    model_name: "gpt-4"          # 相同的模型名称
+    api_key: "key1"
+    api_base: "base1"
+
+  - provider: "openai"
+    model_name: "gpt-4"          # 相同的模型名称
+    api_key: "key2"
+    api_base: "base2"
+```
+
+在这种情况下，对 "gpt-4" 的请求将使用指定的策略（轮询、随机或优先可用）自动在两个配置之间进行负载均衡。
+
+#### 模型名称的灵活性
+
+- 你可以在配置中使用任意模型名称
+- API 调用中的模型名称必须与配置完全匹配
+- 多个提供商可以使用相同的模型名称来实现负载均衡
+- 不同的模型名称可以指向相同的提供商类型
+
+例如：
+```yaml
+providers:
+  - provider: "openai"
+    model_name: "my-fast-model"     # 自定义名称
+    api_key: "${OPENAI_API_KEY}"
+
+  - provider: "openai"
+    model_name: "my-smart-model"    # 不同名称，相同提供商
+    api_key: "${OPENAI_API_KEY2}"
+```
 
 ### 可用接口
 
