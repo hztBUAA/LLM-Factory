@@ -14,6 +14,9 @@ from ..factory import LLMFactory
 from ..models import ChatCompletionRequest, ChatMessage, ModelConfig
 from ..providers import ProviderType
 
+from dotenv import load_dotenv
+load_dotenv()
+
 router = APIRouter()
 
 _factory: Optional[LLMFactory] = None
@@ -33,16 +36,23 @@ def get_factory() -> LLMFactory:
         
         # OpenAI配置
         openai_keys = [k.strip() for k in os.getenv("OPENAI_API_KEYS", "").split(",") if k.strip()]
+        openai_bases = [b.strip() for b in os.getenv("OPENAI_API_BASES", "").split(",") if b.strip()]
+        
         if not openai_keys and os.getenv("OPENAI_API_KEY"):  # 兼容单个key的情况
             openai_keys = [os.getenv("OPENAI_API_KEY")]
+            openai_bases = [os.getenv("OPENAI_API_BASE")] if os.getenv("OPENAI_API_BASE") else []
         
-        for api_key in openai_keys:
+        if len(openai_keys) != len(openai_bases):
+            logger.warning("Number of OpenAI API keys and base URLs don't match")
+            return []
+        
+        for api_key, api_base in zip(openai_keys, openai_bases):
             configs.append(ModelConfig(
                 provider=ProviderType.OPENAI,
                 model_name=os.getenv("OPENAI_MODEL", "gpt-4"),
                 api_key=api_key,
-                api_base=os.getenv("OPENAI_API_BASE"),
-                api_version=os.getenv("OPENAI_API_VERSION"),
+                api_base=api_base,
+                api_version=os.getenv("OPENAI_API_VERSION", "2024-02-15-preview"),
             ))
         
         # Qwen配置
