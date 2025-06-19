@@ -202,7 +202,7 @@ factory = LLMFactory.create_from_config("config.yaml")
 
 ## API 集成
 
-LLM Factory 内置了一个兼容 OpenAI 接口的 FastAPI 服务器。
+LLM Factory 提供了一个兼容 OpenAI API 的接口，让你可以在原本为 OpenAI API 设计的应用中使用各种非 OpenAI 模型（如通义千问、DeepSeek、Claude 等）。
 
 ### 启动 API 服务器
 
@@ -213,6 +213,81 @@ python main.py
 ```
 
 服务器会自动从环境变量或配置文件中加载配置。
+
+### 作为 OpenAI API 替代使用
+
+服务器启动后，你可以将其作为 OpenAI API 的直接替代品在你的应用中使用：
+
+1. 使用 OpenAI 官方 Python 客户端：
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="any-key",  # 可以是任意字符串，因为我们使用的是本地服务器
+    base_url="http://localhost:8000/v1"  # 指向你的本地 LLM Factory 服务器
+)
+
+# 像使用官方 OpenAI 客户端一样使用
+response = client.chat.completions.create(
+    model="gpt-4o",  # 或任何在你的 LLM Factory 中配置的模型
+    messages=[{"role": "user", "content": "你好！"}]
+)
+```
+
+2. 对于使用 OpenAI API 的应用：
+   - 将 API 基础 URL 替换为你的 LLM Factory 服务器地址
+   - 常见平台的示例：
+
+   ```python
+   # LangChain
+   from langchain.chat_models import ChatOpenAI
+
+   chat = ChatOpenAI(
+       model_name="gpt-4o",  # 你配置的模型
+       openai_api_key="any-key",
+       openai_api_base="http://localhost:8000/v1"
+   )
+
+   # LlamaIndex
+   from llama_index.llms import OpenAI
+
+   llm = OpenAI(
+       model="gpt-4o",
+       api_key="any-key",
+       api_base="http://localhost:8000/v1"
+   )
+
+   # AutoGPT
+   {
+       "OPENAI_API_KEY": "any-key",
+       "OPENAI_API_BASE_URL": "http://localhost:8000/v1",
+       "OPENAI_API_MODEL": "gpt-4o"
+   }
+   ```
+
+3. 使用 Curl 请求：
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer any-key" \
+  -d '{
+    "model": "gpt-4o",
+    "messages": [{"role": "user", "content": "你好！"}]
+  }'
+```
+
+### 模型映射
+
+当使用 LLM Factory 作为 OpenAI API 替代品时，你可以使用任何已配置的模型。以下是模型映射示例：
+
+| 原 OpenAI 模型      | LLM Factory 对应模型    |
+|-------------------|------------------------|
+| gpt-4            | gpt-4o (Azure OpenAI)  |
+| gpt-3.5-turbo    | qwen-turbo (通义千问)    |
+| claude-3-sonnet  | claude-3-sonnet (Claude)|
+| ...              | 任何已配置的模型           |
+
+在 API 调用中指定的模型名称应与你的配置中的模型名称匹配。
 
 ### 可用接口
 

@@ -202,7 +202,7 @@ The factory supports both synchronous and asynchronous usage:
 
 ## API Integration
 
-The LLM Factory comes with a built-in FastAPI server that provides OpenAI-compatible endpoints.
+The LLM Factory provides an OpenAI-compatible API interface, allowing you to use various non-OpenAI models (like Qwen, DeepSeek, Claude, etc.) in applications that are designed for OpenAI's API.
 
 ### Starting the API Server
 
@@ -213,6 +213,78 @@ python main.py
 ```
 
 The server will automatically load configurations from your environment variables or config files.
+
+### Using as OpenAI API Alternative
+
+Once the server is running, you can use it as a drop-in replacement for OpenAI's API in your applications:
+
+1. For OpenAI's official Python client:
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="any-key",  # Can be any string as we're using local server
+    base_url="http://localhost:8000/v1"  # Point to your local LLM Factory server
+)
+
+# Use it just like official OpenAI client
+response = client.chat.completions.create(
+    model="gpt-4o",  # Or any model configured in your LLM Factory
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+2. For applications using OpenAI API:
+   - Replace the API base URL with your LLM Factory server address
+   - Examples for common platforms:
+
+   ```python
+   # LangChain
+   from langchain.chat_models import ChatOpenAI
+
+   chat = ChatOpenAI(
+       model_name="gpt-4o",  # Your configured model
+       openai_api_key="any-key",
+       openai_api_base="http://localhost:8000/v1"
+   )
+
+   # LlamaIndex
+   from llama_index.llms import OpenAI
+
+   llm = OpenAI(
+       model="gpt-4o",
+       api_key="any-key",
+       api_base="http://localhost:8000/v1"
+   )
+
+   # AutoGPT
+   {
+       "OPENAI_API_KEY": "any-key",
+       "OPENAI_API_BASE_URL": "http://localhost:8000/v1",
+       "OPENAI_API_MODEL": "gpt-4o"
+   }
+   ```
+
+3. For Curl requests:
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer any-key" \
+  -d '{
+    "model": "gpt-4o",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+### Model Mapping(Todo)
+
+When using LLM Factory as an OpenAI API alternative, you can use any of your configured models. Here's how the models map:
+
+```
+Todo
+```
+
+The model you specify in the API call should match the model name in your configuration.
 
 ### Available Endpoints
 
